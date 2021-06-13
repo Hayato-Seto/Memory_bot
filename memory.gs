@@ -19,9 +19,7 @@ function doPost(e) {
       reply(replyToken, add_message);　//substrで入力文字を整形, 関数に渡して実行
 
     } else if(j_mes.match(/@list/) !== null) {
-      message = j_mes.substr(6);
-
-      list_message = list_(message);
+      list_message = list_();
       reply(replyToken, list_message);
 
     } else if(j_mes.match(/@total/) !== null){
@@ -55,33 +53,38 @@ function add_(mes){
   return add_text
 }
 
-function list_(mes){
+function list_(){
   var list_text = ""
-  var split_mes = mes.split("\n")
-  var amount = parseInt(split_mes[1]) //textをnumberに変換
-  var array = ["*** choose command ***", "source or value", "and", "amount : number"]
+  var values =[]
 
-  //エラー処理, 形式に合ってなければvaluesにarrayが返る
-  if(isNaN(amount) === false){
-    if(split_mes[0].match(/source/) !== null){
-      var values = sheet.getRange(1, 1, amount).getValues();
-    } else if(split_mes[0].match(/value/) !== null){
-      var values = sheet.getRange(1, 2, amount).getValues()
+  //データの取得, 空のデータでなければvaluesにデータが入る
+  var data = sheet.getRange(1, 1, 40, 2).getValues()
+  for(let i = 0; i < 40; i++){
+    if(typeof(data[i][0]) === "string" || typeof(data[i][0]) === "number"){
+      var data_1 = data[i][0]
     } else {
-      var values = array
+      var data_1 = ""
     }
-  } else {
-    var values = array
+    if(typeof(data[i][1]) === "string" || typeof(data[i][1]) === "number"){
+      var data_2 = data[i][1]
+    } else {
+      var data_2 = ""
+    }
+    var judge = data_1 === "" && data_2 === ""
+    if(judge === false){
+      values.push([data_1, data_2])
+    }
   }
-  
   //配列を単一のtextに変換
-  if(values.length >= 2){
-    for(let i = 1; i <= values.length -1; i++){
-      list_text = list_text + i.toString() + "  " + values[i-1] + "\n";
+  var d_va = values.length //distance value
+
+  //valuesの長さが1の時は分岐させてfor文に入れないようにする
+  if(d_va >= 2){
+    for(let i = 1; i <= d_va -1; i++){
+      list_text = list_text + i.toString() + "  " + values[i-1][0] + "  " + values[i-1][1] + "\n";
       }
   }
-  var d_va = values.length //distance value
-  list_text = list_text + d_va.toString() + "  " + values[d_va -1]
+  list_text = list_text + d_va.toString() + "  " + values[d_va -1][0] + "  " + values[d_va -1][1]
   return list_text
 }
 
@@ -132,7 +135,7 @@ function cut_(mes){
 
 //commandの表示
 function bot_(){
-  var bot_mes = "$ command list $\n\n@add\ntext\ntext(number)\n\n@list\nsource or value\nnumber\n\n@total\nnumber\n*if value of @list is number\n\n@cut\nindex number\n\nchoose command!!"
+  var bot_mes = "$ command list $\n\n@add\ntext\ntext(number)\n\n@list\n\n@total\nnumber\n*if value of @list is number\n\n@cut\nindex number\n\nchoose command!!"
   return bot_mes
 }
 
