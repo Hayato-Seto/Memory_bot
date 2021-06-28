@@ -91,19 +91,29 @@ function list_(){
 function total_(mes){
   var amount = parseInt(mes)
   var sum = 0
+  var breakr = 0
   
-  //エラー処理, amountが数字じゃなければerrorを返す
-  if(isNaN(amount) === false){
-    var values = sheet.getRange(1, 2, amount).getValues()
-
-    for(let i = 0; i < amount; i++){
-      var values_num = parseInt(values[i])
-      sum = sum + values_num
-    }
-    var total_text = sum.toString() //sumは和の計算, toString()でtextに変換
-  } else {
-    var total_text = "at total, value error : \nWhat is expected is a valid number."
+  //amountが数字じゃなければ2列目のtotalを返すようにamountに2を代入
+  if(isNaN(amount)){
+    amount = 2
   }
+
+  for(let i = 1;; i++){
+    var values = sheet.getRange(i, amount).getValues()
+    var values_num = parseInt(values[0])
+
+    //数字以外はsumに入れないようにする, かつ, breakrを増やして数字以外が6個になったらbreakで離脱
+    if(isNaN(values_num) === false){
+      sum = sum + values_num
+    } else {
+      breakr = breakr + 1
+
+      if(breakr > 5){
+        break;
+      }
+    }
+  }
+  var total_text = sum.toString() //sumは和の計算, toString()でtextに変換
   return total_text
 }
 
@@ -135,7 +145,7 @@ function cut_(mes){
 
 //commandの表示
 function bot_(){
-  var bot_mes = "$ command list $\n\n@add\ntext\ntext(number)\n\n@list\n\n@total\nnumber\n*if value of @list is number\n\n@cut\nindex number\n\nchoose command!!"
+  var bot_mes = "$ command list $\n\n@add\ntext\ntext(number)\n\n@list\n\n@total\n(number, default -> 2)\n\n@cut\nindex number\n\nchoose command!!"
   return bot_mes
 }
 
